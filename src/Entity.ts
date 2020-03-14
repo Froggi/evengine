@@ -5,6 +5,8 @@ export interface Entity {
   index:number
   extenders:Array<string>
   extend:(typeInit:(e:any) => string) => Entity
+  set:(values) => Entity
+  queueEvent:(event:string) => Entity
 }
 
 let indexCounter = 1;
@@ -21,6 +23,14 @@ export default ():any => {
       }
       this.extenders.push(typeName)
       queueEvent(typeName+".Init", e)
+      return this
+    },
+    set: function(values:any) {
+      Object.assign(this,values)
+      return this
+    },
+    queueEvent: function(event:string) {
+      queueEvent(event, this)
       return this
     }
   }

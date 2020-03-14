@@ -79,7 +79,7 @@ addListener("TimeToLive.Killed", (e:Entity&Name&Collision2D) => {
 })
 
 addListener("Position2D.Update", (e:Entity&Position2D) => {
-  queueEvent("Position2D.Render", e)
+  queueEvent("Render", e)
 })
 
 addListener("Velocity2D.Update", (e:Entity&Position2D&Velocity2D&Collision2D) => {

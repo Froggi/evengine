@@ -5,7 +5,7 @@ let running = false
 let preAddedListeners = {}
 
 export interface Handler {
-  listeners:{[event:string]:Array<{func: (e:any) => any, priority:number}>}
+  listeners:{[event:string]:Array<{func: (e:any) => any, priority:number, immutable:boolean}>}
   queue:Array<Array<() => any>>
   currentQueue:number
 }
@@ -24,7 +24,7 @@ export function initHandler() {
   setHandler(mainHandler)
 }
 
-export function addListener(event:string, func:(e:any, data?:any) =>any, priority:number = 10):any {
+export function addListener(event:string, func:(e:any, data?:any) =>any, priority:number = 10, immutable:boolean = false):any {
   let e = MainHandler
   let listeners = preAddedListeners
   if(e) {
@@ -35,7 +35,8 @@ export function addListener(event:string, func:(e:any, data?:any) =>any, priorit
   }
   listeners[event].push({
     func,
-    priority
+    priority,
+    immutable
   })
   if(listeners[event].length > 1) {
     listeners[event].sort((a,b) => a.priority-b.priority)
@@ -52,12 +53,17 @@ export function queueEvent(event:string, eA:Entity, data:any = null, priority:bo
   }
   if(e.listeners[event]) {
     for(let listener of e.listeners[event]) {
+      let eB = eA
+      if(listener.immutable) {
+        eB = {...eB}
+      }
       if(priority) {
-        e.queue[e.currentQueue==0?1:0].unshift(listener.func.bind(eA, eA, data))
+        e.queue[e.currentQueue==0?1:0].unshift(listener.func.bind(eA, eB, data))
       }else {
-        e.queue[e.currentQueue==0?1:0].push(listener.func.bind(eA, eA, data))
+        e.queue[e.currentQueue==0?1:0].push(listener.func.bind(eA, eB, data))
       }
     }
+    
     if(!running) {
       running = true
       e.currentQueue = e.currentQueue==0?1:0
